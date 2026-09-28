@@ -32,7 +32,7 @@
         <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
         <h1 class="text-lg lg:text-xl font-bold tracking-tight text-white flex items-center gap-2">
           <span>NDX 戈登模型與歷史戰情室</span>
-          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v3.0 Grounding Live</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v3.1 Grounding</span>
         </h1>
       </div>
 
@@ -244,7 +244,7 @@
             <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
               <span class="text-cyan-400">⚡</span> Mega 7 財報 AI 變現動能與資本開支追蹤
             </h3>
-            <p class="text-xs text-slate-400 mt-0.5">點擊「AI 聯網檢索」即刻連網搜尋 6 家科技巨頭最新變現與開支狀況</p>
+            <p class="text-xs text-slate-400 mt-0.5">每次點擊「AI 聯網檢索」即刻調用 Google Search 搜尋最新變現狀況</p>
           </div>
           <span class="text-xs font-mono text-slate-500" id="mega7-updated">動態監控中</span>
         </div>
@@ -332,7 +332,7 @@
         <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <p class="text-xs text-slate-400 leading-relaxed">
-        此金鑰僅會保存在您目前的瀏覽器（LocalStorage）中，不會上傳至任何伺服器。支援即時調用 Google Search 爬取華爾街與聯準會數據。
+        金鑰保存在本地瀏覽器 LocalStorage，支援調用 Google Search 聯網搜尋即時市場指標。
       </p>
       <div>
         <label class="block text-xs text-slate-300 mb-1.5 font-medium">Gemini API Key</label>
@@ -726,7 +726,7 @@
       }
     }
 
-    // AI 聯網檢索主引擎 (已加入 Google Search Grounding 聯網架構)
+    // AI 聯網檢索主引擎 (精確採用 commit daceaa4 之 googleSearch 語法架構)
     async function runAiIntelligence() {
       const spinner = document.getElementById('fetch-spinner');
       const btn = document.getElementById('btn-fetch-ai');
@@ -742,15 +742,15 @@
           return;
         }
 
-        const prompt = `請透過 Google Search 搜尋華爾街與聯準會最新實盤總經數據，以及科技巨頭最新資本支出與 AI 變現狀況：
-1. US 10-Year Treasury Yield (名目殖利率，數字百分比，例如 4.35 或 5.23)
-2. US 10-Year TIPS Yield (實質殖利率，例如 2.05)
-3. ISM Manufacturing New Orders Index (最新數值，例如 50.4)
-4. US High Yield OAS Option-Adjusted Spread (高收債利差 bps，整數，例如 318)
-5. 2027 NDX EPS 預期年化複合成長率共識 (例如 15.0)
+        const prompt = `請使用 Google Search 搜尋最新的即時總體經濟數據與科技巨頭動態：
+1. US 10-Year Treasury Yield (最新名目殖利率，數字百分比，例如 4.35 或 5.23)
+2. US 10-Year TIPS Yield (最新實質殖利率，例如 2.05)
+3. ISM Manufacturing New Orders Index (最新 ISM 新訂單指數，例如 50.4)
+4. US High Yield OAS Option-Adjusted Spread (最新高收債信用利差 bps，例如 318)
+5. 2027 NDX EPS 預期年化成長率共識 (例如 15.0)
 6. Mega 7 (NVDA, MSFT, GOOGL, AMZN, META, AAPL) 最新評估。
 
-搜尋完畢後，請嚴格只輸出如下 JSON 格式，不要有任何多餘的引言或 markdown：
+搜尋完畢後，請嚴格只輸出如下 JSON 格式，不要加任何 markdown 或多餘字元：
 {
   "r": 5.23,
   "tips": 2.15,
@@ -767,14 +767,14 @@
   ]
 }`;
 
-        // 掛載 googleSearch 原生工具進行檢索
+        // 正式端點 + 駝峰命名 googleSearch 工具
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            tools: [{ google_search: {} }]
+            tools: [{ googleSearch: {} }]
           })
         });
 
@@ -785,7 +785,6 @@
         const data = await response.json();
         const resText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (resText) {
-          // 支援提取 Markdown code block 或直接 JSON 字串
           const jsonMatch = resText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
@@ -801,11 +800,11 @@
             document.getElementById('mega7-updated').textContent = "聯網搜尋完成: " + new Date().toLocaleTimeString('zh-TW');
             calculateAndSave(true);
           } else {
-            throw new Error("無法解析回傳之 JSON 格式");
+            throw new Error("無法解析回傳之 JSON 內容");
           }
         }
       } catch (err) {
-        alert('聯網檢索執行提示：' + err.message + '\n系統已為您載入基準數據快照。');
+        alert('聯網檢索提示：' + err.message + '\n系統已自動為您帶入當前基準數據快照。');
         calculateAndSave(true);
       } finally {
         spinner.classList.add('hidden');
