@@ -32,7 +32,7 @@
         <div class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
         <h1 class="text-lg lg:text-xl font-bold tracking-tight text-white flex items-center gap-2">
           <span>NDX 戈登模型與歷史戰情室</span>
-          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v2.6 Stable</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">v3.0 Grounding Live</span>
         </h1>
       </div>
 
@@ -244,7 +244,7 @@
             <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
               <span class="text-cyan-400">⚡</span> Mega 7 財報 AI 變現動能與資本開支追蹤
             </h3>
-            <p class="text-xs text-slate-400 mt-0.5">點擊「AI 聯網檢索」可即時動態更新各科技巨頭最新變現評估</p>
+            <p class="text-xs text-slate-400 mt-0.5">點擊「AI 聯網檢索」即刻連網搜尋 6 家科技巨頭最新變現與開支狀況</p>
           </div>
           <span class="text-xs font-mono text-slate-500" id="mega7-updated">動態監控中</span>
         </div>
@@ -332,7 +332,7 @@
         <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-white">&times;</button>
       </div>
       <p class="text-xs text-slate-400 leading-relaxed">
-        此金鑰僅會保存在您目前的瀏覽器（LocalStorage）中，不會上傳至任何伺服器。可用於點擊「AI 聯網檢索」時進行科技股即時分析。
+        此金鑰僅會保存在您目前的瀏覽器（LocalStorage）中，不會上傳至任何伺服器。支援即時調用 Google Search 爬取華爾街與聯準會數據。
       </p>
       <div>
         <label class="block text-xs text-slate-300 mb-1.5 font-medium">Gemini API Key</label>
@@ -422,6 +422,52 @@
       document.getElementById('disp-oas').textContent = Math.round(oas) + ' bps';
       document.getElementById('disp-g').textContent = g.toFixed(1) + '%';
 
+      // 總經快照動態評語標籤判定
+      const tagR = document.getElementById('tag-r');
+      if (r >= 5.0) {
+        tagR.textContent = "高利率承壓";
+        tagR.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-rose-950 text-rose-400 border border-rose-800";
+      } else if (r >= 4.2) {
+        tagR.textContent = "中性偏緊縮";
+        tagR.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-amber-950 text-amber-400 border border-amber-800";
+      } else {
+        tagR.textContent = "流動性寬鬆";
+        tagR.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-emerald-950 text-emerald-400 border border-emerald-800";
+      }
+
+      const tagTips = document.getElementById('tag-tips');
+      if (tips >= 2.0) {
+        tagTips.textContent = "實質緊縮高水位";
+        tagTips.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-rose-950 text-rose-400 border border-rose-800";
+      } else if (tips >= 1.5) {
+        tagTips.textContent = "實質資金偏緊";
+        tagTips.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-amber-950 text-amber-400 border border-amber-800";
+      } else {
+        tagTips.textContent = "實質環境寬裕";
+        tagTips.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-emerald-950 text-emerald-400 border border-emerald-800";
+      }
+
+      const tagIsm = document.getElementById('tag-ism');
+      if (ism >= 50.0) {
+        tagIsm.textContent = "擴張週期 (>50)";
+        tagIsm.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-emerald-950 text-emerald-400 border border-emerald-800";
+      } else {
+        tagIsm.textContent = "景氣收縮 (<50)";
+        tagIsm.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-rose-950 text-rose-400 border border-rose-800";
+      }
+
+      const tagOas = document.getElementById('tag-oas');
+      if (oas <= 350) {
+        tagOas.textContent = "信用環境安定";
+        tagOas.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-emerald-950 text-emerald-400 border border-emerald-800";
+      } else if (oas <= 450) {
+        tagOas.textContent = "流動性微緊";
+        tagOas.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-amber-950 text-amber-400 border border-amber-800";
+      } else {
+        tagOas.textContent = "信用風險升溫";
+        tagOas.className = "text-[10px] px-1.5 py-0.5 rounded mt-1.5 inline-block font-mono bg-rose-950 text-rose-400 border border-rose-800";
+      }
+
       // 綜合風險燈號判定
       const orb = document.getElementById('risk-light-orb');
       const badge = document.getElementById('risk-badge');
@@ -467,7 +513,7 @@
       return { pe, r, tips, ism, oas, g, ey, erp, r_minus_g, riskLevel };
     }
 
-    // 繪製敏感度矩陣 (永續成長率 2.5% ~ 5.0%)
+    // 繪製敏感度矩陣
     function renderSensitivityMatrix(currentR) {
       const gList = [2.5, 3.0, 3.5, 4.0, 4.5, 5.0];
       const rList = [4.75, 5.00, 5.25, 5.50, 5.75];
@@ -680,7 +726,7 @@
       }
     }
 
-    // AI 聯網檢索主引擎 (已採用正確官方 gemini-2.0-flash 端點，杜絕 404)
+    // AI 聯網檢索主引擎 (已加入 Google Search Grounding 聯網架構)
     async function runAiIntelligence() {
       const spinner = document.getElementById('fetch-spinner');
       const btn = document.getElementById('btn-fetch-ai');
@@ -691,18 +737,20 @@
 
       try {
         if (!key) {
-          // 若無設定 Key，自動帶入最新市場實盤數據並存檔
-          document.getElementById('input-r').value = "5.23";
-          document.getElementById('input-tips').value = "2.15";
-          document.getElementById('input-ism').value = "51.4";
-          document.getElementById('input-oas').value = "318";
-          document.getElementById('input-g').value = "15.0";
-          document.getElementById('mega7-updated').textContent = "實盤基準更新: " + new Date().toLocaleTimeString('zh-TW');
-          calculateAndSave(true);
+          alert('請先點擊右上角「API 金鑰」設定您的 Gemini API Key！');
+          openApiKeyModal();
           return;
         }
 
-        const prompt = `請以美股科技股策略師身份，針對當前科技股估值環境評估，請僅輸出以下純 JSON 格式，不要加任何 markdown 或多餘字元：
+        const prompt = `請透過 Google Search 搜尋華爾街與聯準會最新實盤總經數據，以及科技巨頭最新資本支出與 AI 變現狀況：
+1. US 10-Year Treasury Yield (名目殖利率，數字百分比，例如 4.35 或 5.23)
+2. US 10-Year TIPS Yield (實質殖利率，例如 2.05)
+3. ISM Manufacturing New Orders Index (最新數值，例如 50.4)
+4. US High Yield OAS Option-Adjusted Spread (高收債利差 bps，整數，例如 318)
+5. 2027 NDX EPS 預期年化複合成長率共識 (例如 15.0)
+6. Mega 7 (NVDA, MSFT, GOOGL, AMZN, META, AAPL) 最新評估。
+
+搜尋完畢後，請嚴格只輸出如下 JSON 格式，不要有任何多餘的引言或 markdown：
 {
   "r": 5.23,
   "tips": 2.15,
@@ -719,14 +767,14 @@
   ]
 }`;
 
-        // 官方穩定端點
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+        // 掛載 googleSearch 原生工具進行檢索
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            tools: [{ google_search: {} }]
           })
         });
 
@@ -737,22 +785,27 @@
         const data = await response.json();
         const resText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         if (resText) {
-          const parsed = JSON.parse(resText);
-          if (parsed.r) document.getElementById('input-r').value = parsed.r;
-          if (parsed.tips) document.getElementById('input-tips').value = parsed.tips;
-          if (parsed.ism) document.getElementById('input-ism').value = parsed.ism;
-          if (parsed.oas) document.getElementById('input-oas').value = parsed.oas;
-          if (parsed.g) document.getElementById('input-g').value = parsed.g;
-          if (parsed.mega7 && Array.isArray(parsed.mega7)) {
-            mega7Data = parsed.mega7;
-            renderMega7Cards();
+          // 支援提取 Markdown code block 或直接 JSON 字串
+          const jsonMatch = resText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            if (parsed.r) document.getElementById('input-r').value = parseFloat(parsed.r);
+            if (parsed.tips) document.getElementById('input-tips').value = parseFloat(parsed.tips);
+            if (parsed.ism) document.getElementById('input-ism').value = parseFloat(parsed.ism);
+            if (parsed.oas) document.getElementById('input-oas').value = Math.round(parseFloat(parsed.oas));
+            if (parsed.g) document.getElementById('input-g').value = parseFloat(parsed.g);
+            if (parsed.mega7 && Array.isArray(parsed.mega7)) {
+              mega7Data = parsed.mega7;
+              renderMega7Cards();
+            }
+            document.getElementById('mega7-updated').textContent = "聯網搜尋完成: " + new Date().toLocaleTimeString('zh-TW');
+            calculateAndSave(true);
+          } else {
+            throw new Error("無法解析回傳之 JSON 格式");
           }
-          document.getElementById('mega7-updated').textContent = "AI 即時更新: " + new Date().toLocaleTimeString('zh-TW');
-          calculateAndSave(true);
         }
       } catch (err) {
-        alert('聯網檢索提示：' + err.message + '\n系統已自動為您帶入最新實盤數據快照。');
-        document.getElementById('input-r').value = "5.23";
+        alert('聯網檢索執行提示：' + err.message + '\n系統已為您載入基準數據快照。');
         calculateAndSave(true);
       } finally {
         spinner.classList.add('hidden');
